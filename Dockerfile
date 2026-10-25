@@ -1,16 +1,24 @@
-FROM python:3.11
+FROM ghcr.io/astral-sh/uv:0.13.5 AS uv
 
-# Install pypiserver
-RUN pip install "pypiserver[passlib]"
+FROM python:3.13.17-slim-trixie
 
-# Set working directory
+# Install pypiserver with uv from hashed, pinned requirements
+COPY --from=uv /uv /usr/local/bin/uv
+COPY requirements.txt /tmp/requirements.txt
+RUN uv pip install --system --no-cache --require-hashes -r /tmp/requirements.txt \
+    && rm /usr/local/bin/uv /tmp/requirements.txt
+
+# Run as an unprivileged user
+RUN useradd --system --uid 10001 --home-dir /pypi --create-home pypi \
+    && mkdir -p /pypi/packages \
+    && chown -R pypi:pypi /pypi
+
+COPY --chmod=755 entrypoint.sh /usr/local/bin/entrypoint.sh
+
+USER pypi
 WORKDIR /pypi
 
-# Copy password file into the container
-COPY pypi_password.txt /pypi_password.txt
-
-# Expose port
 EXPOSE 8010
 
-# Set startup command
-CMD ["pypi-server", "run", "-p", "8010", "--passwords", "/pypi_password.txt", "/pypi_packages"]
+ENTRYPOINT ["entrypoint.sh"]
+CMD ["pypi-server", "run", "-p", "8010", "--passwords", "/tmp/htpasswd", "/pypi/packages"]
