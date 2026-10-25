@@ -73,3 +73,7 @@ Dependencies are pinned with hashes in `requirements.txt`. To upgrade, edit `req
 ```bash
 uv pip compile requirements.in --python-version 3.13 --universal --generate-hashes -o requirements.txt
 ```
+
+## Security
+
+Upgrading an existing deployment (plain-text password file, `~/pypi_packages`)? Follow the migration steps in the security log. Dependency upgrades and the known remaining issues are recorded in [docs/security-log.md](docs/security-log.md) ([繁體中文](docs/security-log.zh-TW.md)).
