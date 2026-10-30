@@ -74,6 +74,16 @@ Dependencies are pinned with hashes in `requirements.txt`. To upgrade, edit `req
 uv pip compile requirements.in --python-version 3.13 --universal --generate-hashes -o requirements.txt
 ```
 
-## Security
+## Upgrading an old deployment
 
-Upgrading an existing deployment (plain-text password file, `~/pypi_packages`)? Follow the migration steps in the security log. Dependency upgrades and the known remaining issues are recorded in [docs/security-log.md](docs/security-log.md) ([繁體中文](docs/security-log.zh-TW.md)).
+Older versions kept a plain-text password file in the repository and stored packages in `~/pypi_packages`. To move to the current setup:
+
+1. Copy `.env.example` to `.env` and set a new `PYPI_USERNAME` / `PYPI_PASSWORD`.
+2. Run `./deploy.sh` once. This creates the `pypi-server_packages` volume.
+3. Copy the old packages into the volume and give them to the container user:
+
+   ```bash
+   docker run --rm -v ~/pypi_packages:/src:ro -v pypi-server_packages:/dst alpine sh -c 'cp -a /src/. /dst/ && chown -R 10001:10001 /dst'
+   ```
+
+4. Run `./restart.sh`.
