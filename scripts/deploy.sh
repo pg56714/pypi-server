@@ -1,5 +1,6 @@
 #!/bin/sh
 set -e  # Exit on any error
+cd "$(dirname "$0")/.."  # run from the repository root
 
 if [ ! -f .env ]; then
     echo "Missing .env: copy .env.example to .env and set PYPI_USERNAME / PYPI_PASSWORD." >&2

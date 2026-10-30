@@ -1,0 +1,13 @@
+[project]
+name = "pypi-server"
+version = "0.1.0"
+description = "Private PyPI server (pypiserver) in Docker"
+requires-python = ">=3.13"
+dependencies = [
+    "pypiserver[passlib]==2.4.2",
+    # passlib 1.7.4 fails with bcrypt 5 (its bug-detection hashes a password longer than 72 bytes)
+    "bcrypt>=4.3,<5",
+]
+
+[tool.uv]
+package = false

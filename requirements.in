@@ -1,3 +1,0 @@
-pypiserver[passlib]==2.4.2
-# passlib 1.7.4 fails with bcrypt 5 (its bug-detection hashes a password longer than 72 bytes)
-bcrypt>=4.3,<5

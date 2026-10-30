@@ -11,15 +11,15 @@ A self-hosted Python package index based on [pypiserver](https://github.com/pypi
    # edit .env and set PYPI_USERNAME / PYPI_PASSWORD
    ```
 
-   The password is never stored in the image or the repository. At startup, `entrypoint.sh` hashes it with bcrypt into a password file inside the container (`/tmp/htpasswd`).
+   The password is never stored in the image or the repository. At startup, `docker/entrypoint.sh` hashes it with bcrypt into a password file inside the container (`/tmp/htpasswd`).
 
 2. Build and start:
 
    ```bash
-   ./deploy.sh
+   ./scripts/deploy.sh
    ```
 
-   Restart with `./restart.sh`. Packages are kept in the `packages` Docker volume.
+   Restart with `./scripts/restart.sh`. Packages are kept in the `packages` Docker volume.
 
 The server listens on port `8010` (change it with `PYPI_PORT` in `.env`). It runs as a non-root user with a read-only root filesystem. Uploading requires the account; downloading is public by default. To require the account for downloads as well, add `-a download,update` to the `pypi-server run` command in the `Dockerfile` (`CMD`).
 
@@ -68,10 +68,10 @@ If downloads require the account, set `UV_INDEX_PRIVATE_USERNAME` and `UV_INDEX_
 
 ## Upgrade pypiserver
 
-Dependencies are pinned with hashes in `requirements.txt`. To upgrade, edit `requirements.in` and run:
+Dependencies are declared in `pyproject.toml` and pinned with hashes in `uv.lock`. To upgrade, edit `pyproject.toml` if needed and run:
 
 ```bash
-uv pip compile requirements.in --python-version 3.13 --universal --generate-hashes -o requirements.txt
+uv lock --upgrade
 ```
 
 ## Upgrading an old deployment
@@ -79,11 +79,11 @@ uv pip compile requirements.in --python-version 3.13 --universal --generate-hash
 Older versions kept a plain-text password file in the repository and stored packages in `~/pypi_packages`. To move to the current setup:
 
 1. Copy `.env.example` to `.env` and set a new `PYPI_USERNAME` / `PYPI_PASSWORD`.
-2. Run `./deploy.sh` once. This creates the `pypi-server_packages` volume.
+2. Run `./scripts/deploy.sh` once. This creates the `pypi-server_packages` volume.
 3. Copy the old packages into the volume and give them to the container user:
 
    ```bash
    docker run --rm -v ~/pypi_packages:/src:ro -v pypi-server_packages:/dst alpine sh -c 'cp -a /src/. /dst/ && chown -R 10001:10001 /dst'
    ```
 
-4. Run `./restart.sh`.
+4. Run `./scripts/restart.sh`.
