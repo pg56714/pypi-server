@@ -1,2 +1,2 @@
-#!/bin/bash
-docker restart pypi-server
+#!/bin/sh
+docker compose restart pypi-server
